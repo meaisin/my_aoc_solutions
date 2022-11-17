@@ -1,4 +1,7 @@
-class BingoTable(numbers: List[Int]):
+// Verified solution :)
+// (Fulfills part 1 and part 2 simultaneously)
+
+class BingoTable(val numbers: List[Int]):
   require(numbers.length == 25)
 
   val rows = numbers.grouped(5).toList
@@ -20,10 +23,31 @@ class BingoTable(numbers: List[Int]):
     val previousCount = countUnmarked()
     lines = lines.map(_.filter(_ != number))
     (countUnmarked() != previousCount, isBingo()) match
-      case (true, true) => finalCallout = Some(number)
+      case (true, true) => finalCallout = Some(number); calledOut = number :: calledOut
       case (true, false) => calledOut = number :: calledOut
       case (_, _) => ()
     callouts = callouts + 1
+
+  def sumOfUnmarked(): Int = numbers.filter(!calledOut.contains(_)).sum
+
+  def winningCalculation(): Option[Int] =
+    finalCallout match
+      case None => None
+      case Some(x) => Some(sumOfUnmarked() * x)
+
+  def handleCalloutList(numbers: List[Int]): Unit =
+    def inner(list: List[Int], won: Boolean): Unit =
+      (list, won) match
+        case (_, true) => ()
+        case (x :: xs, false) => handleCallout(x); inner(xs, isBingo())
+        case (_, _) => ()
+    inner(numbers, isBingo())
+
+  override def toString(): String =
+    numbers.map{ x =>
+      if calledOut.contains(x) then "x" + x.toString + " "
+      else " " + x.toString + " "
+    }.grouped(5).map(_.mkString("")).mkString("\n")
 
 @main def main(arg: String): Unit =
   import scala.io.Source
@@ -46,9 +70,16 @@ class BingoTable(numbers: List[Int]):
     .grouped(25)
     .toList
     .map(BingoTable.apply(_))
+    
+  cards.foreach(_.handleCalloutList(callouts))
+  //cards.foreach(println)
+
+  val data = cards
+    .map(x => (x.callouts, x.winningCalculation()))
+    .sorted
 
   println(callouts)
-  println(cards)
+  println(data)
 
 // SOLUTION:
 // get rows of bingo table as list of lists

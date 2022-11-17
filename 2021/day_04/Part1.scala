@@ -43,12 +43,6 @@ class BingoTable(val numbers: List[Int]):
         case (_, _) => ()
     inner(numbers, isBingo())
 
-  override def toString(): String =
-    numbers.map{ x =>
-      if calledOut.contains(x) then "x" + x.toString + " "
-      else " " + x.toString + " "
-    }.grouped(5).map(_.mkString("")).mkString("\n")
-
 @main def main(arg: String): Unit =
   import scala.io.Source
 
@@ -72,21 +66,9 @@ class BingoTable(val numbers: List[Int]):
     .map(BingoTable.apply(_))
     
   cards.foreach(_.handleCalloutList(callouts))
-  //cards.foreach(println)
 
   val data = cards
     .map(x => (x.callouts, x.winningCalculation()))
     .sorted
 
-  println(callouts)
   println(data)
-
-// SOLUTION:
-// get rows of bingo table as list of lists
-// transpose to get columns
-// concat rows and columns together into list of lists representing all rows and columns of table
-// map a filter over each for each element of the callout iteratively, halting when an empty list is detected
-// return number of iterations until empty list
-// map over all bingo tables to get iterations + sum of all numbers
-// sort by iterations
-// return sum of all numbers from tuple from head

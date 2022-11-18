@@ -20,21 +20,6 @@ class Point(val x: Int, val y: Int):
   def +(that: Point): Point =
     Point(this.x + that.x, this.y + that.y)
 
-  /*def diagonalize(that: Point): List[Point] =
-    val unit = (this.x < that.x, this.y < that.y) match
-      case (true, true) => Point(1, 1)
-      case (true, false) => Point(1, -1)
-      case (false, true) => Point(-1, 1)
-      case (false, false) => Point(-1, -1)
-    def inner(list: List[Point], point: Point): List[Point] =
-      println(s"List: $list, Point: $point")
-      val newPointList = (point + unit) :: list
-      if that == newPointList then
-        newPointList
-      else
-        inner(newPointList, point + unit)
-    inner(List(), this)
-    */
   def diagonalize(that: Point): List[Point] =
     val xRange = if this.x < that.x then (this.x to that.x) else (this.x to that.x by -1)
     val yRange = if this.y < that.y then (this.y to that.y) else (this.y to that.y by -1)

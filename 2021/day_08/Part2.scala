@@ -1,5 +1,8 @@
+// Verified solution :)
+
 class Display(samples: List[String], outputValue: List[String]):
   val sampleSet = samples.map(_.toSet)
+  val outputSet = outputValue.map(_.toSet)
   val oneValue = sampleSet.filter(_.size == 2).head
   val fourValue = sampleSet.filter(_.size == 4).head
   val sevenValue = sampleSet.filter(_.size == 3).head
@@ -8,35 +11,7 @@ class Display(samples: List[String], outputValue: List[String]):
   val twoThreeFive = sampleSet.filter(_.size == 5)
   val nineSixZero = sampleSet.filter(_.size == 6)
 
-  //   aaaa
-  //  b    c
-  //  b    c
-  //   dddd
-  //  e    f
-  //  e    f
-  //   gggg
-  //
-  //  a = topSegment :)
-  //  b = topLeftSegment :)
-  //  c = topRightSegment :)
-  //  d = middleSegment :)
-  //  e = bottomLeftSegment :)
-  //  f = bottomRightSegment :)
-  //  g = bottomSegment :)
-  //
-  //   aaaa 
-  //  b    c
-  //  b    c
-  //   dddd
-  //  e    ?
-  //  e    ?
-  //   ????
-  //
-  // 1 = cf
-  // 7 = acf
-  // Tf 7 - 1 = a
-  
-  val ecd = nineSixZero.map(eightValue diff _).flatten.toSet
+  private val ecd = nineSixZero.map(eightValue diff _).flatten.toSet
 
   // a
   val top = sevenValue diff oneValue // :)
@@ -44,7 +19,7 @@ class Display(samples: List[String], outputValue: List[String]):
   // e
   val bottomLeft = ecd diff fourValue // :)
 
-  val cd = ecd diff bottomLeft
+  private val cd = ecd diff bottomLeft
 
   // d
   val middle = cd diff oneValue
@@ -61,9 +36,6 @@ class Display(samples: List[String], outputValue: List[String]):
   // g
   val bottom = eightValue diff (top union topLeft union topRight union middle union bottomLeft union bottomRight)
 
-  val oneValueCheck = oneValue intersect (topRight union bottomRight)
-  val fourValueCheck = fourValue intersect (topLeft union middle union topRight union bottomRight)
-
   val decodedZero = top union topRight union topLeft union bottomRight union bottomLeft union bottom
   val decodedOne = topRight union bottomRight
   val decodedTwo = top union topRight union middle union bottomLeft union bottom
@@ -74,6 +46,16 @@ class Display(samples: List[String], outputValue: List[String]):
   val decodedSeven = top union topRight union bottomRight
   val decodedEight = top union topLeft union topRight union middle union bottomRight union bottomLeft union bottom
   val decodedNine = top union topLeft union topRight union middle union bottomRight union bottom
+
+  val decodingMap = Map(decodedZero -> "0", decodedOne -> "1", decodedTwo -> "2", decodedThree -> "3", decodedFour -> "4", decodedFive -> "5",
+    decodedSix -> "6", decodedSeven -> "7", decodedEight -> "8", decodedNine -> "9")
+
+  val decodedSampleSet = sampleSet.map(decodingMap(_))
+  val decodedOutputSet = outputSet.map(decodingMap(_))
+
+  val decodedValue = decodedOutputSet.toList.mkString
+
+  val decodedInt = Integer.parseInt(decodedValue: String)
 
   override def toString(): String =
     List(s" ${top.head.toString * 4} ",
@@ -92,22 +74,7 @@ class Display(samples: List[String], outputValue: List[String]):
     .toList
     .map(_.split(" "))
     .map(x => Display(x.takeWhile(_ != "|").toList, x.dropWhile(_ != "|").tail.toList))
+    .map(_.decodedInt)
+    .sum
 
-  data.foreach{ x =>
-    println(s"Display: \n$x")
-    println(s"-- [1]: ${x.oneValue}")
-    println(s"-- [4]: ${x.fourValue}")
-    println(s"-- [7]: ${x.sevenValue}")
-    println(s"-- [8]: ${x.eightValue}")
-    println(s"Decoding:\n")
-    println(s"-- [0]: ${x.decodedZero}")
-    println(s"-- [1]: ${x.decodedOne}")
-    println(s"-- [2]: ${x.decodedTwo}")
-    println(s"-- [3]: ${x.decodedThree}")
-    println(s"-- [4]: ${x.decodedFour}")
-    println(s"-- [5]: ${x.decodedFive}")
-    println(s"-- [6]: ${x.decodedSix}")
-    println(s"-- [7]: ${x.decodedSeven}")
-    println(s"-- [8]: ${x.decodedEight}")
-    println(s"-- [9]: ${x.decodedNine}")
-  }
+  println(data)

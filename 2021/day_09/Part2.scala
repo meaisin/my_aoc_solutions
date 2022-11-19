@@ -1,3 +1,12 @@
+// Idea for solving part 2:
+// Create Basin class which takes minimum points as basis
+// Recursive function that adds points to basin
+// Calculate basin size
+// Map across generated basins to return basin sizes.
+// Sort basins by basin size.
+// Take 3.
+// Return their product.
+
 class Point(val x: Int, val y: Int, val height: Int, gAP: (Int, Int) => List[(Int, Int)]):
   val adjacentPoints = gAP(x, y)
   val riskLevel = height + 1

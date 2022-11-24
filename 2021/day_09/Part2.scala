@@ -1,3 +1,5 @@
+// Verified solution :) (Both parts)
+
 class CaveMap(val locationData: Array[Array[Int]]):
   class Point(val x: Int, val y: Int, val height: Int):
     override def toString(): String = s"[$x,$y]: $height"
@@ -26,27 +28,34 @@ class CaveMap(val locationData: Array[Array[Int]]):
       .map((a, b) => Point(a, b, locationData(a)(b)))
 
   private def adjacentPointsSansNines(points: List[Point]): List[Point] =
-    excludeNines(points.flatMap(adjacentPoints(_)))
+    points.flatMap(adjacentPoints(_)).filter(_.height < 9)
 
-  private def excludeNines(list: List[Point]): List[Point] =
-    list.filter(_.height < 9)
-
-  def basinPoints(point: Point): List[Point] =
+  private def basinPoints(point: Point): List[Point] =
     def inner(candidatePoints: List[Point], confirmedPoints: List[Point]): List[Point] =
-      println(s"${candidatePoints.map(_.height)} --- ${confirmedPoints.map(_.height)}")
       if candidatePoints.isEmpty then
-        println(s"${confirmedPoints.length}")
         confirmedPoints
       else
         inner(adjacentPointsSansNines(candidatePoints).toSet.toList.filter(!confirmedPoints.contains(_)), candidatePoints concat confirmedPoints)
     inner(List(point), List())
 
-  val lowPoints: List[Point] =
+  private val lowPoints: List[Point] =
     pointData
       .toList
       .filter(x => adjacentPoints(x)
         .map(_.height > x.height)
         .foldLeft(true)((acc, x) => acc && x))
+
+  val part1Solution = lowPoints
+    .map(_.height + 1)
+    .sum
+
+  val part2Solution = lowPoints
+    .map(basinPoints(_))
+    .map(_.length)
+    .sorted
+    .reverse
+    .take(3)
+    .product
 
   val basins = lowPoints.map(basinPoints(_))
   val basinSizes = basins.map(_.length).sorted.reverse
@@ -59,9 +68,9 @@ end CaveMap
 
   val caveMap = CaveMap(sourceData)
 
-  println(s"${caveMap.lowPoints.map(_.height).map(_ + 1).sum}")
+  println(s"${caveMap.part1Solution}")
 
-  println(s"${caveMap.basinSizes.take(3).product}")
+  println(s"${caveMap.part2Solution}")
 
 end main
 

@@ -1,0 +1,68 @@
+// Do initial increment step.
+// Map over state: if hasn't flashed
+
+class Point(val x: Int, val y: Int, val energy: Int, val flashed: Boolean):
+  override def toString: String = s"[$x,$y]: $energy: ${if flashed then "flashed" else "hasn't flashed"}"
+
+  def incrementEnergy: Point =
+    val newEnergy = energy + 1
+    Point(x, y, newEnergy, if newEnergy >= 9 then true else false)
+
+  def reset: Point =
+    Point(x, y, if flashed then 0 else energy, false)
+
+class Cavern(val state: List[Point]):
+  override def toString: String = state.mkString(" ")
+
+  // Occurs at start of step.
+  def incrementStep: Cavern =
+    Cavern(state.map(_.incrementEnergy))
+
+  def countFlashed: Int =
+    state.filter(_.flashed).length
+
+  // Occurs at end of step.
+  def reset: Cavern =
+    Cavern(state.map(_.reset))
+
+object Cavern:
+  val xMax: Int = 9
+  val yMax: Int = 9
+
+  def inBounds(x: Int, y: Int): Boolean =
+    val xInBounds = x >= 0 && x <= xMax
+    val yInBounds = y >= 0 && y <= yMax
+    xInBounds && yInBounds
+
+  def adjacentCoords(x: Int, y: Int): List[(Int, Int)] = //Assume max x == max y == 9
+    val units = List(
+      (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)
+    )
+    units
+      .map((a, b) => (a + a, y + b))
+      .filter((a, b) => inBounds(a, b))
+
+  def increaseCavernEnergy(points: List[Point]): List[Point] =
+    points.map(_.incrementEnergy)
+
+@main def main(filename: String): Unit =
+  import scala.io.Source
+
+  val data = Source
+    .fromFile(filename)
+    .getLines
+    .toArray
+    .map(_.toArray.map((x: Char) => Integer.parseInt(x.toString)))
+
+  val points = (for
+    i <- 0 to data.size - 1
+    j <- 0 to data.head.size - 1
+  yield
+    Point(i, j, data(i)(j), false)).toList
+
+  val cavern = Cavern(points)
+
+  println(cavern)
+  println(cavern.incrementStep)
+
+end main

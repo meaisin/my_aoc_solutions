@@ -1,15 +1,5 @@
-enum Position:
-  case Leftmost
-  case Rightmost
-  case Neither
-
-// Erroneous adjacent positions:
-// Rightmost bottom corner: 1 erroneous position.
-// Leftmost bottom corner: 3 erroneous positions.
-// Rightmost: 3 erroneous positions. (Those whos pos % 10 == 0)
-// Leftmost: 3 erroneous positions. (Those whose pos % 10 == 9)
-//
-//
+// Rightmost: Erroneous adjacent positions: (Those whos pos % 10 == 0).
+// Leftmost: Erroneous adjacent positions: (Those whose pos % 10 == 9).
 
 class Point(val pos: Int, val energy: Int):
   override def toString: String =
@@ -26,6 +16,23 @@ class Point(val pos: Int, val energy: Int):
       .map(pos + _)
       .filter(x => x >= 0 && x <= 99)
       .filter(specialFilter(_))
+
+  def incrementEnergy: Point =
+    Point(pos, energy + 1)
+
+class Cavern(val points: List[Point]):
+  override def toString: String =
+    s"$points"
+
+  def incrementPointsAt(targetPoints: List[Int]): Cavern =
+    val newPoints = points
+      .map{x =>
+        if targetPoints contains x.pos then
+          x.incrementEnergy
+        else
+          x
+      }
+    Cavern(newPoints)
 
 @main def main(arg: String): Unit =
   import scala.io.Source

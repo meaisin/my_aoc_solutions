@@ -6,7 +6,9 @@
     .toList
     .mkString(" ")
     .split("  ")
-    .map(_.split(" ").map(Integer.parseInt(_)))
+    .map(_
+      .split(" ")
+      .map(Integer.parseInt(_)))
     .map(_.sum)
     .sorted
     .reverse

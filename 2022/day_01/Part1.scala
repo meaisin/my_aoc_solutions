@@ -10,8 +10,7 @@
       .split(" ")
       .map(Integer.parseInt(_)))
     .map(_.sum)
-    .sorted
-    .reverse
+    .sortBy(-_)
   
   val part1Solution = data.head
   val part2Solution = data.take(3).sum

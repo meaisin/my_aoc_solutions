@@ -1,6 +1,3 @@
-def valueOf(char: Char): Int =
-  if char.isUpper then (char.toInt - 38) else (char.toInt - 96)
-
 @main def main(arg: String): Unit =
   import scala.io.Source
   val data = Source

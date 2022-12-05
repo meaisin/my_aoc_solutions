@@ -21,23 +21,36 @@ class Crates(initialState: List[List[String]]):
   val topCrates: String =
     crateStacks.toList.map(_.head).mkString
 
-def parseInstruction(instruction: String): (Int, Int, Int) =
-  import scala.util.matching.Regex
-  val instructionRegex = "move ([0-9]+) from ([0-9]+) to ([0-9]+)".r
-  instruction match
-    case instructionRegex(quantity, fromStack, toStack) =>
-      (Integer.parseInt(quantity), 
-        Integer.parseInt(fromStack), 
-        Integer.parseInt(toStack))
-    case _ =>
-      throw new RuntimeException("Contradiction.")
+object Crates:
+  def parseInstruction(instruction: String): (Int, Int, Int) =
+    import scala.util.matching.Regex
+    val instructionRegex = "move ([0-9]+) from ([0-9]+) to ([0-9]+)".r
+    instruction match
+      case instructionRegex(quantity, fromStack, toStack) =>
+        (Integer.parseInt(quantity), 
+          Integer.parseInt(fromStack), 
+          Integer.parseInt(toStack))
+      case _ =>
+        throw new RuntimeException("Contradiction.")
 
-def cleanValue(string: String): String =
-  import scala.util.matching.Regex
-  val crate = """\[([A-Z])\](\s*)""".r
-  string match
-    case crate(symbol, _) => symbol
-    case _ => "_"
+  def cleanValue(string: String): String =
+    import scala.util.matching.Regex
+    val crate = """\[([A-Z])\](\s*)""".r
+    string match
+      case crate(symbol, _) => symbol
+      case _ => "_"
+
+  def cleanCrateText(text: String) =
+    text
+      .split("\n")
+      .map(_
+        .grouped(4)
+        .toList)
+      .init
+      .toList
+      .map(_.map(Crates.cleanValue(_)))
+      .transpose
+      .map(_.dropWhile(_ == "_"))
 
 @main def main(arg: String): Unit =
   import scala.io.Source
@@ -50,24 +63,10 @@ def cleanValue(string: String): String =
     .mkString("\n")
     .split("\n\n")
 
-  require(data.length == 2)
-
   val crateText = data(0)
   val instructionText = data(1).split("\n")
-
-  val instructions = instructionText.map(parseInstruction(_))
-
-  val stacks = crateText
-    .split("\n")
-    .map(_
-      .grouped(4)
-      .toList)
-    .init
-    .toList
-    .map(_.map(cleanValue(_)))
-    .transpose
-    .map(_.dropWhile(_ == "_"))
-
+  val instructions = instructionText.map(Crates.parseInstruction(_))
+  val stacks = Crates.cleanCrateText(crateText)
   val part1Crates = Crates(stacks)
   val part2Crates = Crates(stacks)
 

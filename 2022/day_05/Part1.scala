@@ -54,7 +54,6 @@ object Crates:
 
 @main def main(arg: String): Unit =
   import scala.io.Source
-  import scala.util.matching.Regex
 
   val data = Source
     .fromFile(arg)

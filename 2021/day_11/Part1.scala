@@ -1,38 +1,33 @@
-// Rightmost: Erroneous adjacent positions: (Those whos pos % 10 == 0).
-// Leftmost: Erroneous adjacent positions: (Those whose pos % 10 == 9).
+// Firstly, I need to way to model a single step.
+// A single step consists of:
+// - Incrementing all energy levels by 1.
+// - Each octopus > 9 flashes, raising the energy of all adjacent by 1.
+// - This continues until no more actions take place.
+// - All octopus > 9 is set back to 0.
 
-class Point(val pos: Int, val energy: Int):
+// (-1, -1) (-1, +0) (-1, +1)
+// (+0, -1) (+0, +0) (+0, +1)
+// (+1, -1) (+1, +0) (+1, +1)
+
+class Octopus(octopuses: List[List[Int]]):
+  require(octopuses.length == 10 && octopuses.head.length == 10)
+  private val mapLimit = 9
+
   override def toString: String =
-    s"[$pos]: $energy"
+    octopuses.map(_.mkString).mkString("\n")
 
-  val specialFilter = 
-    (pos % 10) match
-      case 0 => (x: Int) => x % 10 != 9
-      case 9 => (x: Int) => x % 10 != 0
-      case _ => (x: Int) => true
+  private def initiateStep: Octopus =
+    Octopus(octopuses
+      .map(_.map(_ + 1)))
 
-  val adjacentPoints: List[Int] =
-    List(1, -1, 9, -9, 10, -10, 11, -11)
-      .map(pos + _)
-      .filter(x => x >= 0 && x <= 99)
-      .filter(specialFilter(_))
+  private def endStep: Octopus =
+    Octopus(octopuses
+      .map(_.map(x => if x > 9 then 0 else x)))
 
-  def incrementEnergy: Point =
-    Point(pos, energy + 1)
-
-class Cavern(val points: List[Point]):
-  override def toString: String =
-    s"$points"
-
-  def incrementPointsAt(targetPoints: List[Int]): Cavern =
-    val newPoints = points
-      .map{x =>
-        if targetPoints contains x.pos then
-          x.incrementEnergy
-        else
-          x
-      }
-    Cavern(newPoints)
+  def step: Octopus =
+    this
+      .initiateStep
+      .endStep
 
 @main def main(arg: String): Unit =
   import scala.io.Source
@@ -41,16 +36,12 @@ class Cavern(val points: List[Point]):
     .fromFile(arg)
     .getLines
     .toList
-    .flatMap(_.toList)
-    .map((x: Char) => Integer.parseInt(x.toString))
+    .map(_.toList.map(x => Integer.parseInt(x.toString)).toList)
 
-  val points = for
-    i <- 0 to data.length - 1
-  yield
-    Point(i, data(i))
+  val octopuses = Octopus(data)
 
-  points
-    .filter(x => x.pos % 10 == 0 || x.pos % 10 == 9)
-    .foreach{x =>
-    println(s"$x: ${x.adjacentPoints}")
-  }
+  println(octopuses)
+  println("")
+  println(octopuses.step)
+  println("")
+  println(octopuses.step.step)

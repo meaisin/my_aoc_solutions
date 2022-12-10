@@ -58,14 +58,18 @@ class Rope(val totalLength: Int = 2):
     if array.size == 1 then
       Array(newPoint)
     else
-      val newArray = for
+      val newArray = array
+      for
         i <- 0 to (array.size - 1)
-      yield
+      do
         if i == 0 then
-          newPoint
+          newArray(i) = newPoint
         else
-          array(i - 1)
-      newArray.toArray
+          if isContacting(array(i - 1), array(i)) then
+            ()
+          else
+            array(i) = array(i - 1)
+      newArray
 
 end Rope
 
@@ -88,7 +92,6 @@ end Rope
 
   val part1Solution = rope1.uniqueLocations
   println(part1Solution)
-  println(rope1.pointsVisited.toList)
 
   val rope2: Rope = Rope(10)
 

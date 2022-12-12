@@ -1,11 +1,11 @@
 // (Worry level of item, monkey ID to throw to)
-type Throw = (Int, Int)
+type Throw = (Long, Int)
 
 class Monkey(
   val id: Int,
-  val initialItems: List[Int],
-  val operation: (Int => Int),
-  val test: (Int => Boolean),
+  val initialItems: List[Long],
+  val operation: (Long => Long),
+  val test: Long,
   val trueThrowId: Int,
   val falseThrowId: Int
   ):
@@ -17,32 +17,45 @@ class Monkey(
       s"\tIf false: throw to monkey $falseThrowId\n"
   }
 
+  private var monkeyBusiness: BigInt = BigInt(0)
+
+  def mb: BigInt = monkeyBusiness
+
   private var items = initialItems
 
-  private def inspectItem(item: Int): Int = {
+  private def inspectItem(item: Long): Long = {
+    monkeyBusiness += 1;
     operation(item) / 3
   }
 
-  private def testItem(item: Int): Boolean = {
-    test(item)
+  private def inspectItem(item: Long, reducer: Long): Long = {
+    monkeyBusiness += 1
+    operation(item) % reducer
   }
 
-  private def throwTo(item: Int): Int = {
+  private def testItem(item: Long): Boolean = {
+    item % test == 0
+  }
+
+  private def throwTo(item: Long): Int = {
     if testItem(item) then 
       trueThrowId 
     else 
       falseThrowId
   }
 
-  def takeTurn: List[Throw] = {
+  def takeTurn(reducer: Option[Long]): List[Throw] = {
+    val f = reducer match
+      case Some(r) => (l: Long) => inspectItem(l, r)
+      case _ => (l: Long) => inspectItem(l)
     val thrownItems = items
-      .map(inspectItem)
+      .map(f)
       .map(x => (x, throwTo(x)))
     items = List()
     thrownItems
   }
 
-  def receiveItem(item: Int): Unit = {
+  def receiveItem(item: Long): Unit = {
     items = items appended item
   }
 
@@ -56,9 +69,9 @@ object Monkey:
       case _ => throw new RuntimeException("Bad format!")
   }
 
-  def parseMInitialItems(string: String): List[Int] = {
-    def parseItems(items: String): List[Int] = {
-      items.split(",").toList.map(_.toInt)
+  def parseMInitialItems(string: String): List[Long] = {
+    def parseItems(items: String): List[Long] = {
+      items.split(",").toList.map(_.toLong)
     }
 
     string.split(" ").toList match
@@ -66,12 +79,12 @@ object Monkey:
       case _ => throw new RuntimeException("Bad format!")
   }
 
-  def parseMOperation(string: String): (Int => Int) = {
-    def parseOper(oper: List[String]): (Int => Int) = {
+  def parseMOperation(string: String): (Long => Long) = {
+    def parseOper(oper: List[String]): (Long => Long) = {
       oper match
-        case List("old", "*", "old") => ((x: Int) => x * x)
-        case List("old", "*", n) => ((x: Int) => x * n.toInt)
-        case List("old", "+", n) => ((x: Int) => x + n.toInt)
+        case List("old", "*", "old") => ((x: Long) => x * x)
+        case List("old", "*", n) => ((x: Long) => x * n.toLong)
+        case List("old", "+", n) => ((x: Long) => x + n.toLong)
         case _ => throw new RuntimeException("Bad format!")
     }
 
@@ -80,11 +93,8 @@ object Monkey:
       case _ => throw new RuntimeException("Bad format!")
   }
 
-  def parseMTest(string: String): (Int => Boolean) = {
-    string.split(" ").toList match
-      case List("Test:", "divisible", "by", n) => 
-        ((x: Int) => x % n.toInt == 0)
-      case _ => throw new RuntimeException("Bad format!")
+  def parseMTest(string: String): Long = {
+    string.split(" ").toList.last.toLong
   }
 
   def parseMThrowId(string: String): Int = {
@@ -108,6 +118,41 @@ object Monkey:
 
 end Monkey
 
+class Monkeys(val monkeyList: List[Monkey], val part2: Boolean):
+  val reducer: Option[Long] = if part2 then
+    Some(monkeyList.map(_.test).product) else None
+
+  private def handleThrow(aThrow: Throw): Unit = {
+    val (item, id) = aThrow
+    monkeyList(id).receiveItem(item)
+  }
+
+  private def handleThrows(throws: List[Throw]): Unit = {
+    throws.foreach{x =>
+      handleThrow(x)
+    }
+  }
+
+  private def handleTurn: Unit = {
+    for
+      monkey <- monkeyList
+    do
+      handleThrows(monkey.takeTurn(reducer))
+  }
+
+  def handleTurns(n: Int): Unit = {
+    for
+      i <- 0 to (n - 1)
+    do
+      handleTurn
+  }
+
+  def solution: BigInt = {
+    monkeyList.map(_.mb).sorted.reverse.take(2).product
+  }
+
+end Monkeys
+
 @main def main(arg: String): Unit =
   import scala.io.Source
 
@@ -118,9 +163,16 @@ end Monkey
     .map(_.map(_.trim).filter(_ != "").toList)
     .toList
 
-  val monkeys = data
-    .map(Monkey.parseMonkey(_))
+  val monkeys1 = Monkeys(data
+    .map(Monkey.parseMonkey(_)), false)
 
-  println(monkeys)
+  monkeys1.handleTurns(20)
 
-  println(monkeys.head.takeTurn)
+  println(monkeys1.solution)
+
+  val monkeys2 = Monkeys(data
+    .map(Monkey.parseMonkey(_)), true)
+
+  monkeys2.handleTurns(10000)
+
+  println(monkeys2.solution)
